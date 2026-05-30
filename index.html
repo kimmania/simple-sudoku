@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <title>Simple Sudoku</title>
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <h1 class="title">Simple Sudoku</h1>
+        <div class="status-bar">
+          <span id="mistakes" class="mistakes" aria-live="polite">Mistakes: 0</span>
+        </div>
+      </header>
+
+      <section class="controls" aria-label="Game controls">
+        <label class="difficulty-label">
+          <span class="sr-only">Difficulty</span>
+          <select id="difficulty" class="difficulty-select">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+            <option value="expert">Expert</option>
+          </select>
+        </label>
+        <button type="button" id="new-game" class="btn btn-primary">New Game</button>
+      </section>
+
+      <div id="win-banner" class="win-banner hidden" role="status">
+        Puzzle complete!
+      </div>
+
+      <main class="game-area">
+        <div
+          id="board"
+          class="board"
+          role="grid"
+          aria-label="Sudoku board"
+          aria-rowcount="9"
+          aria-colcount="9"
+        ></div>
+
+        <aside class="sidebar">
+          <div class="action-row">
+            <button type="button" id="note-mode" class="btn btn-toggle" aria-pressed="false">
+              Notes
+            </button>
+            <button type="button" id="fill-notes" class="btn">Fill Notes</button>
+            <button type="button" id="clear-notes" class="btn">Clear Notes</button>
+          </div>
+
+          <div id="numpad" class="numpad" role="group" aria-label="Number pad">
+            <button type="button" class="numpad-btn" data-digit="1">1</button>
+            <button type="button" class="numpad-btn" data-digit="2">2</button>
+            <button type="button" class="numpad-btn" data-digit="3">3</button>
+            <button type="button" class="numpad-btn" data-digit="4">4</button>
+            <button type="button" class="numpad-btn" data-digit="5">5</button>
+            <button type="button" class="numpad-btn" data-digit="6">6</button>
+            <button type="button" class="numpad-btn" data-digit="7">7</button>
+            <button type="button" class="numpad-btn" data-digit="8">8</button>
+            <button type="button" class="numpad-btn" data-digit="9">9</button>
+            <button type="button" id="erase" class="numpad-btn numpad-erase">Erase</button>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <span id="puzzle-id" class="puzzle-id"></span>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
