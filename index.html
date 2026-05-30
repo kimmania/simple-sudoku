@@ -7,7 +7,14 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Sudoku" />
     <meta name="theme-color" content="#1a1a2e" />
+    <meta
+      name="description"
+      content="Mobile-first Sudoku with notes, four difficulty levels, and mistake counting."
+    />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Simple Sudoku</title>
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
@@ -17,6 +24,7 @@
         <h1 class="title">Simple Sudoku</h1>
         <div class="status-bar">
           <span id="mistakes" class="mistakes" aria-live="polite">Mistakes: 0</span>
+          <span id="puzzle-id" class="puzzle-id"></span>
         </div>
       </header>
 
@@ -54,6 +62,7 @@
             </button>
             <button type="button" id="fill-notes" class="btn">Fill Notes</button>
             <button type="button" id="clear-notes" class="btn">Clear Notes</button>
+            <button type="button" id="undo" class="btn" disabled>Undo</button>
           </div>
 
           <div id="numpad" class="numpad" role="group" aria-label="Number pad">
@@ -72,7 +81,7 @@
       </main>
 
       <footer class="footer">
-        <span id="puzzle-id" class="puzzle-id"></span>
+        <span id="puzzle-id-footer" class="puzzle-id"></span>
       </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>

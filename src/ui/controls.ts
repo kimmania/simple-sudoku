@@ -18,8 +18,9 @@ export function updateMistakes(count: number): void {
 }
 
 export function updatePuzzleId(id: string): void {
-  const el = document.getElementById('puzzle-id');
-  if (el) el.textContent = id ? `#${id}` : '';
+  const label = id ? `#${id}` : '';
+  document.getElementById('puzzle-id')?.replaceChildren(document.createTextNode(label));
+  document.getElementById('puzzle-id-footer')?.replaceChildren(document.createTextNode(label));
 }
 
 export function setNoteMode(active: boolean): void {
@@ -27,6 +28,12 @@ export function setNoteMode(active: boolean): void {
   if (!btn) return;
   btn.classList.toggle('active', active);
   btn.setAttribute('aria-pressed', String(active));
+}
+
+export function setUndoEnabled(enabled: boolean): void {
+  const btn = document.getElementById('undo') as HTMLButtonElement | null;
+  if (!btn) return;
+  btn.disabled = !enabled;
 }
 
 export function showWinBanner(show: boolean): void {
@@ -40,12 +47,14 @@ export function bindControlHandlers(handlers: {
   onNoteMode: () => void;
   onFillNotes: () => void;
   onClearNotes: () => void;
+  onUndo: () => void;
   onDifficultyChange: () => void;
 }): void {
   document.getElementById('new-game')?.addEventListener('click', handlers.onNewGame);
   document.getElementById('note-mode')?.addEventListener('click', handlers.onNoteMode);
   document.getElementById('fill-notes')?.addEventListener('click', handlers.onFillNotes);
   document.getElementById('clear-notes')?.addEventListener('click', handlers.onClearNotes);
+  document.getElementById('undo')?.addEventListener('click', handlers.onUndo);
   getDifficultySelect().addEventListener('change', handlers.onDifficultyChange);
 }
 

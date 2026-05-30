@@ -1,5 +1,6 @@
 import type { GameState } from './sudoku/types';
 import { clearNotesOnEmptyCells } from './sudoku/grid';
+import { applySnapshot, captureSnapshot, type HistorySnapshot } from './sudoku/history';
 import {
   commitValue,
   eraseCell,
@@ -17,6 +18,7 @@ import {
   setActiveDigit,
   setDifficulty,
   setNoteMode,
+  setUndoEnabled,
   showWinBanner,
   updateMistakes,
   updatePuzzleId,
@@ -27,6 +29,7 @@ export class SudokuApp {
   private board = createBoard(document.getElementById('board')!);
   private activeDigit: number | null = null;
   private loading = false;
+  private undoStack: HistorySnapshot[] = [];
 
   async init(): Promise<void> {
     bindBoardClick(this.board, (row, col) => this.selectCell(row, col));
@@ -35,7 +38,8 @@ export class SudokuApp {
       onNoteMode: () => this.toggleNoteMode(),
       onFillNotes: () => this.handleFillNotes(),
       onClearNotes: () => this.handleClearNotes(),
-      onDifficultyChange: () => {},
+      onUndo: () => this.handleUndo(),
+      onDifficultyChange: () => void this.newGame(),
     });
     bindNumpadHandlers({
       onDigit: (digit) => this.handleDigit(digit),
@@ -48,6 +52,7 @@ export class SudokuApp {
     if (saved && saved.status === 'playing') {
       this.state = saved;
       setDifficulty(saved.difficulty);
+      this.clearUndo();
       this.refresh();
       return;
     }
@@ -59,6 +64,7 @@ export class SudokuApp {
     if (this.loading) return;
     this.loading = true;
     clearSavedGame();
+    this.clearUndo();
 
     try {
       const difficulty = getSelectedDifficulty();
@@ -71,6 +77,16 @@ export class SudokuApp {
     } finally {
       this.loading = false;
     }
+  }
+
+  private clearUndo(): void {
+    this.undoStack = [];
+    setUndoEnabled(false);
+  }
+
+  private recordUndoPoint(): void {
+    if (!this.state || this.state.status === 'won') return;
+    this.undoStack = [captureSnapshot(this.state)];
   }
 
   private selectCell(row: number, col: number): void {
@@ -90,13 +106,22 @@ export class SudokuApp {
 
   private handleFillNotes(): void {
     if (!this.state || this.state.status === 'won') return;
+    this.recordUndoPoint();
     fillEmptyNotes(this.state.grid);
     this.refresh();
   }
 
   private handleClearNotes(): void {
     if (!this.state || this.state.status === 'won') return;
+    this.recordUndoPoint();
     clearNotesOnEmptyCells(this.state.grid);
+    this.refresh();
+  }
+
+  private handleUndo(): void {
+    if (!this.state || this.undoStack.length === 0) return;
+    const snapshot = this.undoStack.pop()!;
+    applySnapshot(this.state, snapshot);
     this.refresh();
   }
 
@@ -113,6 +138,8 @@ export class SudokuApp {
     const { row, col } = selected;
     const cell = this.state.grid.cells[row][col];
     if (cell.given) return;
+
+    this.recordUndoPoint();
 
     if (this.state.noteMode) {
       toggleNote(this.state.grid, row, col, digit);
@@ -136,6 +163,8 @@ export class SudokuApp {
     const cell = this.state.grid.cells[row][col];
     if (cell.given) return;
 
+    this.recordUndoPoint();
+
     if (this.state.noteMode && cell.value === 0 && this.activeDigit !== null) {
       cell.notes.delete(this.activeDigit);
     } else {
@@ -150,6 +179,12 @@ export class SudokuApp {
 
     const target = event.target as HTMLElement;
     if (target.tagName === 'SELECT') return;
+
+    if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+      event.preventDefault();
+      this.handleUndo();
+      return;
+    }
 
     if (event.key >= '1' && event.key <= '9') {
       event.preventDefault();
@@ -201,6 +236,7 @@ export class SudokuApp {
     updatePuzzleId(this.state.puzzleId);
     setNoteMode(this.state.noteMode);
     setActiveDigit(this.activeDigit);
+    setUndoEnabled(this.undoStack.length > 0);
     showWinBanner(this.state.status === 'won');
 
     if (this.state.status === 'playing') {
