@@ -7,7 +7,7 @@ import {
   fillEmptyNotes,
   toggleNote,
 } from './sudoku/candidates';
-import { startNewGame } from './sudoku/puzzle';
+import { resetGameState, startNewGame } from './sudoku/puzzle';
 import { clearSavedGame, loadSavedGame, saveGame } from './sudoku/storage';
 import { isSolved } from './sudoku/validate';
 import { bindBoardClick, createBoard, renderBoard } from './ui/board';
@@ -35,6 +35,7 @@ export class SudokuApp {
     bindBoardClick(this.board, (row, col) => this.selectCell(row, col));
     bindControlHandlers({
       onNewGame: () => void this.newGame(),
+      onReset: () => this.handleReset(),
       onNoteMode: () => this.toggleNoteMode(),
       onFillNotes: () => this.handleFillNotes(),
       onClearNotes: () => this.handleClearNotes(),
@@ -77,6 +78,14 @@ export class SudokuApp {
     } finally {
       this.loading = false;
     }
+  }
+
+  private handleReset(): void {
+    if (!this.state) return;
+    resetGameState(this.state);
+    this.activeDigit = null;
+    this.clearUndo();
+    this.refresh();
   }
 
   private clearUndo(): void {

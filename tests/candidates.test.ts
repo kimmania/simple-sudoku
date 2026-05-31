@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { commitValue, fillEmptyNotes, toggleNote } from '../src/sudoku/candidates';
 import { createEmptyGrid, parsePuzzleString } from '../src/sudoku/grid';
-import { pickRandomPuzzle } from '../src/sudoku/puzzle';
+import { createGameState, pickRandomPuzzle, resetGameState } from '../src/sudoku/puzzle';
 import type { Difficulty, Puzzle } from '../src/sudoku/types';
 import { RECENT_PUZZLE_COUNT } from '../src/sudoku/types';
 import { getConflictCells, isSolved, stripNotesInPeers } from '../src/sudoku/validate';
@@ -93,6 +93,30 @@ describe('pickRandomPuzzle', () => {
     expect(picked.id).toBe('easy-002');
 
     sessionStorage.removeItem(key);
+  });
+});
+
+describe('resetGameState', () => {
+  it('restores the initial puzzle and clears progress', () => {
+    const puzzle = {
+      id: 'easy-001',
+      difficulty: 'easy' as const,
+      puzzle: SAMPLE_PUZZLE,
+      solution: SAMPLE_SOLUTION,
+    };
+    const state = createGameState(puzzle);
+    state.grid.cells[0][2].value = 1;
+    state.grid.cells[0][2].notes.add(9);
+    state.mistakes = 2;
+    state.status = 'won';
+
+    resetGameState(state);
+
+    expect(state.grid.cells[0][2].value).toBe(0);
+    expect(state.grid.cells[0][2].notes.size).toBe(0);
+    expect(state.mistakes).toBe(0);
+    expect(state.status).toBe('playing');
+    expect(state.puzzleString).toBe(SAMPLE_PUZZLE);
   });
 });
 

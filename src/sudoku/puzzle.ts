@@ -60,6 +60,7 @@ export function createGameState(puzzle: Puzzle): GameState {
   return {
     grid: parsePuzzleString(puzzle.puzzle),
     solution: parseSolutionString(puzzle.solution),
+    puzzleString: puzzle.puzzle,
     difficulty: puzzle.difficulty,
     puzzleId: puzzle.id,
     selected: null,
@@ -67,6 +68,13 @@ export function createGameState(puzzle: Puzzle): GameState {
     mistakes: 0,
     status: 'playing',
   };
+}
+
+export function resetGameState(state: GameState): void {
+  state.grid = parsePuzzleString(state.puzzleString);
+  state.mistakes = 0;
+  state.status = 'playing';
+  state.selected = null;
 }
 
 export async function startNewGame(difficulty: Difficulty): Promise<GameState> {

@@ -11,11 +11,13 @@ interface Puzzle {
 }
 
 const TARGETS: Record<Difficulty, number> = {
-  easy: 250,
-  medium: 200,
-  hard: 150,
-  expert: 150,
+  easy: 10_000,
+  medium: 10_000,
+  hard: 10_000,
+  expert: 10_000,
 };
+
+const PUZZLES_PER_SOLUTION = 20;
 
 const CLUE_RANGES: Record<Difficulty, { min: number; max: number }> = {
   easy: { min: 40, max: 45 },
@@ -145,27 +147,32 @@ function generateForDifficulty(difficulty: Difficulty): Puzzle[] {
   const seen = new Set<string>();
   const target = TARGETS[difficulty];
   let attempts = 0;
-  const maxAttempts = target * 80;
+  const maxAttempts = target * 20;
+  const idWidth = String(target).length;
 
   while (puzzles.length < target && attempts < maxAttempts) {
     attempts++;
     const solution = generateCompleteGrid();
-    const puzzleGrid = makePuzzle(solution, difficulty);
-    if (!puzzleGrid) continue;
+    const solutionStr = gridToString(solution);
 
-    const puzzleStr = gridToString(puzzleGrid);
-    if (seen.has(puzzleStr)) continue;
-    seen.add(puzzleStr);
+    for (let i = 0; i < PUZZLES_PER_SOLUTION && puzzles.length < target; i++) {
+      const puzzleGrid = makePuzzle(solution, difficulty);
+      if (!puzzleGrid) continue;
 
-    puzzles.push({
-      id: `${difficulty}-${String(puzzles.length + 1).padStart(3, '0')}`,
-      difficulty,
-      puzzle: puzzleStr,
-      solution: gridToString(solution),
-    });
+      const puzzleStr = gridToString(puzzleGrid);
+      if (seen.has(puzzleStr)) continue;
+      seen.add(puzzleStr);
 
-    if (puzzles.length % 25 === 0) {
-      console.log(`  ${difficulty}: ${puzzles.length}/${target}`);
+      puzzles.push({
+        id: `${difficulty}-${String(puzzles.length + 1).padStart(idWidth, '0')}`,
+        difficulty,
+        puzzle: puzzleStr,
+        solution: solutionStr,
+      });
+
+      if (puzzles.length % 500 === 0) {
+        console.log(`  ${difficulty}: ${puzzles.length}/${target}`);
+      }
     }
   }
 
@@ -181,10 +188,12 @@ mkdirSync(outDir, { recursive: true });
 
 for (const difficulty of ['easy', 'medium', 'hard', 'expert'] as Difficulty[]) {
   console.log(`Generating ${difficulty}...`);
+  const started = Date.now();
   const puzzles = generateForDifficulty(difficulty);
   const path = join(outDir, `${difficulty}.json`);
   writeFileSync(path, JSON.stringify(puzzles));
-  console.log(`Wrote ${path} (${puzzles.length} puzzles)`);
+  const seconds = ((Date.now() - started) / 1000).toFixed(1);
+  console.log(`Wrote ${path} (${puzzles.length} puzzles, ${seconds}s)`);
 }
 
 console.log('Done.');

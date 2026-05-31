@@ -22,6 +22,7 @@ export type GameStatus = 'playing' | 'won';
 export interface GameState {
   grid: Grid;
   solution: number[][];
+  puzzleString: string;
   difficulty: Difficulty;
   puzzleId: string;
   selected: { row: number; col: number } | null;

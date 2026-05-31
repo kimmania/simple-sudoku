@@ -10,9 +10,11 @@ A mobile-first Sudoku game built with vanilla TypeScript. Play in the browser â€
 - **Notes mode:** Tap pencil marks for candidate digits
 - **Fill Notes:** Auto-fill candidates only on empty cells with no notes yet
 - **Undo:** Revert the last digit, note, or bulk note change
+- **Reset:** Clear your entries and start the current puzzle over
+- **Undo:** Revert the last digit, note, or bulk note change
 - **Mistake counter:** Tracks wrong entries against the solution
 - **Resume game:** Progress saved to local storage
-- **750+ puzzles:** Pre-generated banks with session anti-repeat
+- **40,000 puzzles:** 10,000 per difficulty, with session anti-repeat
 - **Installable PWA:** Add to Home Screen on iPad or iPhone for a full-screen app experience
 
 ## Development

@@ -44,6 +44,7 @@ export function showWinBanner(show: boolean): void {
 
 export function bindControlHandlers(handlers: {
   onNewGame: () => void;
+  onReset: () => void;
   onNoteMode: () => void;
   onFillNotes: () => void;
   onClearNotes: () => void;
@@ -51,6 +52,7 @@ export function bindControlHandlers(handlers: {
   onDifficultyChange: () => void;
 }): void {
   document.getElementById('new-game')?.addEventListener('click', handlers.onNewGame);
+  document.getElementById('reset')?.addEventListener('click', handlers.onReset);
   document.getElementById('note-mode')?.addEventListener('click', handlers.onNoteMode);
   document.getElementById('fill-notes')?.addEventListener('click', handlers.onFillNotes);
   document.getElementById('clear-notes')?.addEventListener('click', handlers.onClearNotes);

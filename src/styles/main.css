@@ -109,6 +109,11 @@ body {
   flex-shrink: 0;
 }
 
+.controls .btn {
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
 .difficulty-label {
   flex: 1;
   min-width: 0;

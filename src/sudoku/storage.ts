@@ -16,18 +16,10 @@ interface SavedGame {
 }
 
 export function saveGame(state: GameState): void {
-  let puzzleStr = '';
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      const cell = state.grid.cells[row][col];
-      puzzleStr += cell.given ? String(cell.value) : '0';
-    }
-  }
-
   const saved: SavedGame = {
     puzzleId: state.puzzleId,
     difficulty: state.difficulty,
-    puzzle: puzzleStr,
+    puzzle: state.puzzleString,
     solution: state.solution.flat().join(''),
     values: state.grid.cells.map((row) => row.map((cell) => cell.value)),
     notes: state.grid.cells.map((row) =>
@@ -67,6 +59,7 @@ export function loadSavedGame(): GameState | null {
     return {
       grid,
       solution: parseSolutionString(saved.solution),
+      puzzleString: saved.puzzle,
       difficulty: saved.difficulty,
       puzzleId: saved.puzzleId,
       selected: saved.selected,
