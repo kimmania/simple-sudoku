@@ -140,3 +140,24 @@ describe('constants', () => {
     expect(RECENT_PUZZLE_COUNT).toBe(20);
   });
 });
+
+describe('commitValue mistake counting', () => {
+  it('does not double-count when overwriting a wrong value with another wrong value', () => {
+    const grid = makeSampleGrid();
+    const solution = makeSampleSolution();
+    // first wrong entry
+    let delta = commitValue(grid, 0, 2, 1, solution);
+    expect(delta).toBe(1);
+    // overwrite with another wrong entry
+    delta = commitValue(grid, 0, 2, 2, solution);
+    expect(delta).toBe(0);
+  });
+
+  it('reduces mistakes when correcting a wrong cell', () => {
+    const grid = makeSampleGrid();
+    const solution = makeSampleSolution();
+    commitValue(grid, 0, 2, 1, solution); // wrong
+    const delta = commitValue(grid, 0, 2, 4, solution); // correct
+    expect(delta).toBe(-1);
+  });
+});

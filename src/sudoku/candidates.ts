@@ -54,11 +54,15 @@ export function commitValue(
   const cell = grid.cells[row][col];
   if (cell.given) return 0;
 
+  const wasWrong = cell.value !== 0 && cell.value !== solution[row][col];
+  const isWrong = digit !== solution[row][col];
+  const mistakeDelta = (isWrong ? 1 : 0) - (wasWrong ? 1 : 0);
+
   cell.value = digit;
   cell.notes.clear();
   stripNotesInPeers(grid, row, col, digit);
 
-  return digit === solution[row][col] ? 0 : 1;
+  return mistakeDelta;
 }
 
 export function eraseCell(grid: Grid, row: number, col: number): void {
