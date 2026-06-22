@@ -26,6 +26,7 @@ export function createBoard(container: HTMLElement): BoardElements {
       cell.setAttribute('role', 'gridcell');
       cell.dataset.row = String(row);
       cell.dataset.col = String(col);
+      cell.id = `cell-${row}-${col}`;
       cell.tabIndex = -1;
 
       const valueEl = document.createElement('span');
@@ -66,6 +67,15 @@ export function renderBoard(
     : new Set<string>();
   const digitCells =
     highlightDigit !== null ? getDigitHighlightCells(state.grid, highlightDigit) : new Set<string>();
+
+  if (state.selected) {
+    board.container.setAttribute(
+      'aria-activedescendant',
+      `cell-${state.selected.row}-${state.selected.col}`,
+    );
+  } else {
+    board.container.removeAttribute('aria-activedescendant');
+  }
 
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
