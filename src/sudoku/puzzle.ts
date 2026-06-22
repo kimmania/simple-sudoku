@@ -2,20 +2,15 @@ import type { Difficulty, GameState, Puzzle } from './types';
 import { RECENT_PUZZLE_COUNT } from './types';
 import { cloneGrid, parsePuzzleString, parseSolutionString } from './grid';
 
-const puzzleCache = new Map<Difficulty, Puzzle[]>();
 const recentKey = (difficulty: Difficulty) => `simple-sudoku-recent-${difficulty}`;
 
 export async function loadPuzzles(difficulty: Difficulty): Promise<Puzzle[]> {
-  const cached = puzzleCache.get(difficulty);
-  if (cached) return cached;
-
   const response = await fetch(`${import.meta.env.BASE_URL}puzzles/${difficulty}.json`);
   if (!response.ok) {
     throw new Error(`Failed to load puzzles for ${difficulty}`);
   }
 
   const puzzles = (await response.json()) as Puzzle[];
-  puzzleCache.set(difficulty, puzzles);
   return puzzles;
 }
 
