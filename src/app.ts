@@ -95,7 +95,10 @@ export class SudokuApp {
 
   private recordUndoPoint(): void {
     if (!this.state || this.state.status === 'won') return;
-    this.undoStack = [captureSnapshot(this.state)];
+    this.undoStack.push(captureSnapshot(this.state));
+    if (this.undoStack.length > 50) {
+      this.undoStack.shift();
+    }
   }
 
   private selectCell(row: number, col: number): void {
@@ -103,6 +106,10 @@ export class SudokuApp {
     this.state.selected = { row, col };
     const value = this.state.grid.cells[row][col].value;
     this.activeDigit = value !== 0 ? value : this.activeDigit;
+    const boardEl = document.getElementById('board');
+    if (boardEl && document.activeElement !== boardEl) {
+      boardEl.focus({ preventScroll: true });
+    }
     this.refresh();
   }
 
