@@ -7,20 +7,36 @@ import {
   fillEmptyNotes,
   toggleNote,
 } from './sudoku/candidates';
-import { resetGameState, startNewGame } from './sudoku/puzzle';
+import {
+  createGameState,
+  loadPuzzleById,
+  loadPuzzles,
+  resetGameState,
+  startNewGame,
+} from './sudoku/puzzle';
 import { clearSavedGame, loadSavedGame, saveGame } from './sudoku/storage';
+import {
+  getCompletedCount,
+  getTriedIds,
+  recordCompleted,
+  recordTried,
+} from './sudoku/progress';
 import { isSolved } from './sudoku/validate';
 import { bindBoardClick, createBoard, renderBoard } from './ui/board';
 import {
   bindControlHandlers,
   bindNumpadHandlers,
+  closePreviousPicker,
   getSelectedDifficulty,
   setActiveDigit,
   setDifficulty,
   setNoteMode,
+  setPreviousEnabled,
   setUndoEnabled,
   showWinBanner,
+  togglePreviousPicker,
   updateMistakes,
+  updateProgress,
   updatePuzzleId,
 } from './ui/controls';
 
@@ -30,6 +46,7 @@ export class SudokuApp {
   private activeDigit: number | null = null;
   private loading = false;
   private undoStack: HistorySnapshot[] = [];
+  private winRecorded = false;
 
   async init(): Promise<void> {
     bindBoardClick(this.board, (row, col) => this.selectCell(row, col));
@@ -41,6 +58,7 @@ export class SudokuApp {
       onClearNotes: () => this.handleClearNotes(),
       onUndo: () => this.handleUndo(),
       onDifficultyChange: () => void this.newGame(),
+      onPrevious: () => this.openPreviousPicker(),
     });
 
     document.getElementById('play-again')?.addEventListener('click', () => void this.newGame());
@@ -69,15 +87,42 @@ export class SudokuApp {
     this.loading = true;
     clearSavedGame();
     this.clearUndo();
+    closePreviousPicker();
 
     try {
       const difficulty = getSelectedDifficulty();
       this.state = await startNewGame(difficulty);
+      recordTried(this.state.difficulty, this.state.puzzleId);
       this.activeDigit = null;
       this.refresh();
     } catch (error) {
       console.error(error);
       alert('Could not load a puzzle. Please try again.');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private openPreviousPicker(): void {
+    if (!this.state) return;
+    togglePreviousPicker(this.state.difficulty, (id) => void this.loadPrevious(id));
+  }
+
+  private async loadPrevious(id: string): Promise<void> {
+    if (this.loading || !this.state) return;
+    this.loading = true;
+    clearSavedGame();
+    this.clearUndo();
+
+    try {
+      const puzzle = await loadPuzzleById(this.state.difficulty, id);
+      this.state = createGameState(puzzle);
+      recordTried(puzzle.difficulty, puzzle.id);
+      this.activeDigit = null;
+      this.refresh();
+    } catch (error) {
+      console.error(error);
+      alert('Could not load that puzzle. Please try again.');
     } finally {
       this.loading = false;
     }
@@ -247,18 +292,36 @@ export class SudokuApp {
     this.selectCell(row, col);
   }
 
+  private lastWinFirstTime = true;
+
   private refresh(): void {
     if (!this.state) return;
 
+    const { difficulty, puzzleId, status } = this.state;
+    if (status === 'won' && !this.winRecorded) {
+      this.lastWinFirstTime = recordCompleted(difficulty, puzzleId);
+      this.winRecorded = true;
+    }
+    if (status === 'playing') {
+      this.winRecorded = false;
+    }
+
     renderBoard(this.board, this.state, this.activeDigit);
     updateMistakes(this.state.mistakes);
-    updatePuzzleId(this.state.puzzleId);
+    updatePuzzleId(puzzleId);
     setNoteMode(this.state.noteMode);
     setActiveDigit(this.activeDigit);
     setUndoEnabled(this.undoStack.length > 0);
-    showWinBanner(this.state.status === 'won');
+    showWinBanner(status === 'won', this.lastWinFirstTime);
+    setPreviousEnabled(getTriedIds(difficulty).length > 0);
 
-    if (this.state.status === 'playing') {
+    void loadPuzzles(difficulty)
+      .then((puzzles) => updateProgress(getCompletedCount(difficulty), puzzles.length))
+      .catch(() => {
+        /* progress counter is cosmetic — ignore fetch failures */
+      });
+
+    if (status === 'playing') {
       saveGame(this.state);
     } else {
       clearSavedGame();

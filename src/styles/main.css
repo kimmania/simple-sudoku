@@ -98,6 +98,73 @@ body {
   white-space: nowrap;
 }
 
+.progress-count {
+  font-size: 0.75rem;
+  color: var(--player);
+}
+
+.previous-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.previous-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 160px;
+  max-width: 240px;
+  max-height: 260px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.previous-picker.hidden {
+  display: none;
+}
+
+.picker-title {
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.picker-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.picker-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.picker-item:hover,
+.picker-item:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.picker-empty {
+  padding: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 .mistakes {
   font-size: inherit;
 }

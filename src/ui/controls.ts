@@ -1,4 +1,5 @@
 import type { Difficulty } from '../sudoku/types';
+import { getTriedIds } from '../sudoku/progress';
 
 export function getDifficultySelect(): HTMLSelectElement {
   return document.getElementById('difficulty') as HTMLSelectElement;
@@ -36,10 +37,68 @@ export function setUndoEnabled(enabled: boolean): void {
   btn.disabled = !enabled;
 }
 
-export function showWinBanner(show: boolean): void {
+export function showWinBanner(show: boolean, firstTime = true): void {
   const banner = document.getElementById('win-banner');
   if (!banner) return;
   banner.classList.toggle('hidden', !show);
+  if (show) {
+    const label = banner.querySelector('.win-message');
+    if (label) {
+      label.textContent = firstTime
+        ? 'Puzzle complete — first time solving this one!'
+        : 'Puzzle complete! You had solved this one before.';
+    }
+  }
+}
+
+export function updateProgress(completed: number, total: number): void {
+  const el = document.getElementById('progress-count');
+  if (el) el.textContent = `${completed.toLocaleString()} / ${total.toLocaleString()} solved`;
+}
+
+export function setPreviousEnabled(enabled: boolean): void {
+  const btn = document.getElementById('previous') as HTMLButtonElement | null;
+  if (!btn) return;
+  btn.disabled = !enabled;
+}
+
+export function closePreviousPicker(): void {
+  document.getElementById('previous-picker')?.classList.add('hidden');
+}
+
+export function togglePreviousPicker(difficulty: Difficulty, onPick: (id: string) => void): void {
+  const picker = document.getElementById('previous-picker');
+  if (!picker) return;
+  if (!picker.classList.contains('hidden')) {
+    closePreviousPicker();
+    return;
+  }
+
+  const list = picker.querySelector('.picker-list');
+  if (!list) return;
+  list.replaceChildren();
+
+  const ids = getTriedIds(difficulty);
+  if (ids.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'picker-empty';
+    empty.textContent = 'No unsolved puzzles to revisit yet.';
+    list.appendChild(empty);
+  } else {
+    for (const id of ids) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'picker-item';
+      item.textContent = `#${id}`;
+      item.addEventListener('click', () => {
+        closePreviousPicker();
+        onPick(id);
+      });
+      list.appendChild(item);
+    }
+  }
+
+  picker.classList.remove('hidden');
 }
 
 export function bindControlHandlers(handlers: {
@@ -50,6 +109,7 @@ export function bindControlHandlers(handlers: {
   onClearNotes: () => void;
   onUndo: () => void;
   onDifficultyChange: () => void;
+  onPrevious: () => void;
 }): void {
   document.getElementById('new-game')?.addEventListener('click', handlers.onNewGame);
   document.getElementById('reset')?.addEventListener('click', handlers.onReset);
@@ -57,7 +117,18 @@ export function bindControlHandlers(handlers: {
   document.getElementById('fill-notes')?.addEventListener('click', handlers.onFillNotes);
   document.getElementById('clear-notes')?.addEventListener('click', handlers.onClearNotes);
   document.getElementById('undo')?.addEventListener('click', handlers.onUndo);
+  document.getElementById('previous')?.addEventListener('click', handlers.onPrevious);
   getDifficultySelect().addEventListener('change', handlers.onDifficultyChange);
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('#previous-picker') && !target.closest('#previous')) {
+      closePreviousPicker();
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closePreviousPicker();
+  });
 }
 
 export function bindNumpadHandlers(handlers: {

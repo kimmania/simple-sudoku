@@ -25,6 +25,7 @@
         <div class="status-bar">
           <span id="mistakes" class="mistakes" aria-live="polite">Mistakes: 0</span>
           <span id="puzzle-id" class="puzzle-id"></span>
+          <span id="progress-count" class="progress-count" title="Puzzles solved at this difficulty"></span>
         </div>
       </header>
 
@@ -39,11 +40,18 @@
           </select>
         </label>
         <button type="button" id="reset" class="btn">Reset</button>
+        <span class="previous-wrap">
+          <button type="button" id="previous" class="btn" disabled>Previous</button>
+          <div id="previous-picker" class="previous-picker hidden" role="menu" aria-label="Previously tried puzzles">
+            <div class="picker-title">Unfinished puzzles</div>
+            <div class="picker-list"></div>
+          </div>
+        </span>
         <button type="button" id="new-game" class="btn btn-primary">New Game</button>
       </section>
 
       <div id="win-banner" class="win-banner hidden" role="status">
-        Puzzle complete!
+        <span class="win-message">Puzzle complete!</span>
         <div class="win-actions">
           <button type="button" id="play-again" class="btn btn-primary">Play Again</button>
           <a

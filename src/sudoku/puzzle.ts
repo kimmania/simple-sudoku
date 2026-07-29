@@ -1,6 +1,7 @@
 import type { Difficulty, GameState, Puzzle } from './types';
 import { RECENT_PUZZLE_COUNT } from './types';
 import { cloneGrid, parsePuzzleString, parseSolutionString } from './grid';
+import { getCompletedIds } from './progress';
 
 const recentKey = (difficulty: Difficulty) => `simple-sudoku-recent-${difficulty}`;
 
@@ -39,15 +40,30 @@ export function pickRandomPuzzle(puzzles: Puzzle[], difficulty: Difficulty): Puz
     throw new Error(`No puzzles available for ${difficulty}`);
   }
 
+  // Prefer puzzles the player hasn't completed yet; fall back to the full set
+  // once everything has been solved.
+  const completed = new Set(getCompletedIds(difficulty));
+  const unsolved = puzzles.filter((puzzle) => !completed.has(puzzle.id));
+  const candidates = unsolved.length > 0 ? unsolved : puzzles;
+
   const recent = new Set(getRecentIds(difficulty));
-  let pool = puzzles.filter((puzzle) => !recent.has(puzzle.id));
+  let pool = candidates.filter((puzzle) => !recent.has(puzzle.id));
   if (pool.length === 0) {
-    pool = puzzles;
+    pool = candidates;
   }
 
   const index = Math.floor(Math.random() * pool.length);
   const puzzle = pool[index];
   recordRecentId(difficulty, puzzle.id);
+  return puzzle;
+}
+
+export async function loadPuzzleById(difficulty: Difficulty, id: string): Promise<Puzzle> {
+  const puzzles = await loadPuzzles(difficulty);
+  const puzzle = puzzles.find((candidate) => candidate.id === id);
+  if (!puzzle) {
+    throw new Error(`Puzzle ${id} not found for ${difficulty}`);
+  }
   return puzzle;
 }
 
